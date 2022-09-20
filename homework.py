@@ -70,9 +70,9 @@ class Running(Training):
     def get_spent_calories(self) -> float:
         coeff_calorie_1: float = 18
         coeff_calorie_2: float = 20
-        spent_calories: float = ((coeff_calorie_1 * self.get_mean_speed() -
-                                  coeff_calorie_2) * self.wight /
-                                 self.M_IN_KM * self.duration_to_min())
+        spent_calories: float = ((coeff_calorie_1 * self.get_mean_speed()
+                                  - coeff_calorie_2) * self.wight
+                                 / self.M_IN_KM * self.duration_to_min())
         return spent_calories
 
 
@@ -90,10 +90,10 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         coeff_calorie_1: float = 0.035
         coeff_calorie_2: float = 0.029
-        spent_calories: float = ((coeff_calorie_1 * self.wight +
-                                  (self.get_mean_speed()**2 // self.height) *
-                                  coeff_calorie_2 * self.wight) *
-                                 self.duration_to_min())
+        spent_calories: float = ((coeff_calorie_1 * self.wight
+                                  + (self.get_mean_speed()**2 // self.height)
+                                  * coeff_calorie_2 * self.wight)
+                                 * self.duration_to_min())
         return spent_calories
 
 
@@ -113,15 +113,15 @@ class Swimming(Training):
         self.count_pool = count_pool
 
     def get_mean_speed(self):
-        mean_speed = (self.length_pool * self.count_pool /
-                      self.M_IN_KM / self.duration)
+        mean_speed = (self.length_pool * self.count_pool
+                      / self.M_IN_KM / self.duration)
         return mean_speed
 
     def get_spent_calories(self) -> float:
         coeff_calorie_1: float = 1.1
         coeff_calorie_2: float = 2
-        spent_calories: float = ((self.get_mean_speed() + coeff_calorie_1) *
-                                 coeff_calorie_2 * self.wight)
+        spent_calories: float = ((self.get_mean_speed() + coeff_calorie_1)
+                                 * coeff_calorie_2 * self.wight)
         return spent_calories
 
 

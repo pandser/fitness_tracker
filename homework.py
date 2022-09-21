@@ -51,13 +51,12 @@ class Training:
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        info = InfoMessage(str(self.__class__.__name__),
+        return InfoMessage(str(self.__class__.__name__),
                            self.duration,
                            self.get_distance(),
                            self.get_mean_speed(),
                            self.get_spent_calories(),
                            )
-        return info
 
     def duration_to_min(self) -> float:
         """Переводит время тренировки в минуты"""
@@ -128,10 +127,10 @@ def read_package(workout_type: str, data: list) -> Training:
     workouts: Dict[str, Type[Training]] = {'SWM': Swimming,
                                            'RUN': Running,
                                            'WLK': SportsWalking}
-    try:
+    if workout_type not in workouts:
+        raise ValueError()
+    else:
         return workouts[workout_type](*data)
-    except KeyError:
-        print('Неизвестная тренировка.')
 
 
 def main(training: Training) -> None:

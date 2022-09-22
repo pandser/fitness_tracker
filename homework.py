@@ -1,20 +1,20 @@
-from typing import Type, Dict
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from typing import ClassVar, Dict, Type
 
 
 @dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
+    MESSAGE: ClassVar[str] = ('Тип тренировки: {training_type}; '
+                              'Длительность: {duration:.3f} ч.; '
+                              'Дистанция: {distance:.3f} км; '
+                              'Ср. скорость: {speed:.3f} км/ч; '
+                              'Потрачено ккал: {calories:.3f}.')
     training_type: str
     duration: float
     distance: float
     speed: float
     calories: float
-    MESSAGE: str = ('Тип тренировки: {training_type}; '
-                    'Длительность: {duration:.3f} ч.; '
-                    'Дистанция: {distance:.3f} км; '
-                    'Ср. скорость: {speed:.3f} км/ч; '
-                    'Потрачено ккал: {calories:.3f}.')
 
     def get_message(self) -> str:
         return self.MESSAGE.format(**asdict(self))
@@ -23,9 +23,9 @@ class InfoMessage:
 class Training:
     """Базовый класс тренировки."""
 
-    LEN_STEP: float = 0.65
-    M_IN_KM: int = 1000
-    MIN_IN_HOUR = 60
+    LEN_STEP: ClassVar[float] = 0.65
+    M_IN_KM: ClassVar[int] = 1000
+    MIN_IN_HOUR: ClassVar[int] = 60
 
     def __init__(self,
                  action: int,
@@ -46,17 +46,16 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        raise NotImplementedError(f'В {self.__class__.__name__} '
-                                  f'функция get_spent_calories не определена.')
+        raise NotImplementedError(f'В {self.__class__.__name__} функция '
+                                  f'get_spent_calories не определена.')
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(str(self.__class__.__name__),
+        return InfoMessage(self.__class__.__name__,
                            self.duration,
                            self.get_distance(),
                            self.get_mean_speed(),
-                           self.get_spent_calories(),
-                           )
+                           self.get_spent_calories())
 
     def duration_to_min(self) -> float:
         """Переводит время тренировки в минуты"""
@@ -65,8 +64,8 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    COEFF_CALORIE_RUN_1: float = 18
-    COEFF_CALORIE_RUN_2: float = 20
+    COEFF_CALORIE_RUN_1: ClassVar[float] = 18
+    COEFF_CALORIE_RUN_2: ClassVar[float] = 20
 
     def get_spent_calories(self) -> float:
         return ((self.COEFF_CALORIE_RUN_1 * self.get_mean_speed()
@@ -76,9 +75,9 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    COEFF_CALORIE_WLK_1: float = 0.035
-    COEFF_CALORIE_WLK_2: float = 0.029
-    POWER: float = 2
+    COEFF_CALORIE_WLK_1: ClassVar[float] = 0.035
+    COEFF_CALORIE_WLK_2: ClassVar[float] = 0.029
+    POWER: ClassVar[float] = 2
 
     def __init__(self,
                  action: int,
@@ -98,16 +97,16 @@ class SportsWalking(Training):
 
 class Swimming(Training):
     """Тренировка: плавание."""
-    LEN_STEP: float = 1.38
-    COEFF_CALORIE_SWM_1: float = 1.1
-    COEFF_CALORIE_SWM_2: float = 2
+    LEN_STEP: ClassVar[float] = 1.38
+    COEFF_CALORIE_SWM_1: ClassVar[float] = 1.1
+    COEFF_CALORIE_SWM_2: ClassVar[float] = 2
 
     def __init__(self,
                  action: int,
                  duration: float,
                  weight: float,
                  length_pool: int,
-                 count_pool: int
+                 count_pool: int,
                  ) -> None:
         super().__init__(action, duration, weight)
         self.length_pool = length_pool
@@ -128,9 +127,8 @@ def read_package(workout_type: str, data: list) -> Training:
                                            'RUN': Running,
                                            'WLK': SportsWalking}
     if workout_type not in workouts:
-        raise ValueError()
-    else:
-        return workouts[workout_type](*data)
+        raise ValueError(f'Неизвестный код тренировки {workout_type}')
+    return workouts[workout_type](*data)
 
 
 def main(training: Training) -> None:

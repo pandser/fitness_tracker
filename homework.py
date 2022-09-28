@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from typing import ClassVar, Dict, Type
 
 
@@ -20,21 +20,16 @@ class InfoMessage:
         return self.MESSAGE.format(**asdict(self))
 
 
+@dataclass
 class Training:
     """Базовый класс тренировки."""
 
     LEN_STEP: ClassVar[float] = 0.65
     M_IN_KM: ClassVar[int] = 1000
     MIN_IN_HOUR: ClassVar[int] = 60
-
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float,
-                 ) -> None:
-        self.action = action
-        self.duration = duration
-        self.wight = weight
+    action: int
+    duration: float
+    weight: float
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
@@ -62,6 +57,7 @@ class Training:
         return self.duration * self.MIN_IN_HOUR
 
 
+@dataclass
 class Running(Training):
     """Тренировка: бег."""
     COEFF_CALORIE_RUN_1: ClassVar[float] = 18
@@ -69,48 +65,33 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         return ((self.COEFF_CALORIE_RUN_1 * self.get_mean_speed()
-                - self.COEFF_CALORIE_RUN_2) * self.wight
+                - self.COEFF_CALORIE_RUN_2) * self.weight
                 / self.M_IN_KM * self.duration_to_min())
 
 
+@dataclass
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
     COEFF_CALORIE_WLK_1: ClassVar[float] = 0.035
     COEFF_CALORIE_WLK_2: ClassVar[float] = 0.029
     POWER: ClassVar[float] = 2
-
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float,
-                 height: float,
-                 ) -> None:
-        super().__init__(action, duration, weight)
-        self.height = height
+    height: float
 
     def get_spent_calories(self) -> float:
-        return ((self.COEFF_CALORIE_WLK_1 * self.wight
+        return ((self.COEFF_CALORIE_WLK_1 * self.weight
                 + (self.get_mean_speed()**self.POWER // self.height)
-                * self.COEFF_CALORIE_WLK_2 * self.wight)
+                * self.COEFF_CALORIE_WLK_2 * self.weight)
                 * self.duration_to_min())
 
 
+@dataclass
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP: ClassVar[float] = 1.38
     COEFF_CALORIE_SWM_1: ClassVar[float] = 1.1
     COEFF_CALORIE_SWM_2: ClassVar[float] = 2
-
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float,
-                 length_pool: int,
-                 count_pool: int,
-                 ) -> None:
-        super().__init__(action, duration, weight)
-        self.length_pool = length_pool
-        self.count_pool = count_pool
+    length_pool: int
+    count_pool: int
 
     def get_mean_speed(self):
         return (self.length_pool * self.count_pool
@@ -118,7 +99,7 @@ class Swimming(Training):
 
     def get_spent_calories(self) -> float:
         return ((self.get_mean_speed() + self.COEFF_CALORIE_SWM_1)
-                * self.COEFF_CALORIE_SWM_2 * self.wight)
+                * self.COEFF_CALORIE_SWM_2 * self.weight)
 
 
 def read_package(workout_type: str, data: list) -> Training:
@@ -128,16 +109,17 @@ def read_package(workout_type: str, data: list) -> Training:
                                            'WLK': SportsWalking}
     if workout_type not in workouts:
         raise ValueError(f'Неизвестный код тренировки {workout_type}')
+    if len(data) != len(fields(workouts[workout_type])):
+        raise AttributeError(f'Не верное количество аргументов для тренировки'
+                             f' {workouts[workout_type].__name__}, ожидается '
+                             f'{len(fields(workouts[workout_type]))}')
     return workouts[workout_type](*data)
 
 
 def main(training: Training) -> None:
     """Главная функция."""
-    try:
-        info: InfoMessage = training.show_training_info()
-        print(info.get_message())
-    except AttributeError:
-        print('Не удается вывести информацию о тренировке.')
+    info: InfoMessage = training.show_training_info()
+    print(info.get_message())
 
 
 if __name__ == '__main__':
